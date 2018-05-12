@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" type="text/css" href="/webjars/datatables/css/dataTables.bootstrap4.min.css"
+          th:href="@{/webjars/datatables/css/dataTables.bootstrap4.min.css}"/>
+</head>
+<body>
+<div class="container">
+    <table id="customer-table" class="table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Address</th>
+        </tr>
+        </thead>
+    </table>
+</div>
+<script type="application/javascript" src="/webjars/jquery/jquery.min.js"
+        th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script type="application/javascript" src="/webjars/bootstrap/js/bootstrap.bundle.min.js"
+        th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script type="application/javascript" src="/webjars/datatables/js/jquery.dataTables.min.js"
+        th:src="@{/webjars/datatables/js/jquery.dataTables.min.js}"></script>
+<script type="application/javascript" src="/webjars/datatables/js/dataTables.bootstrap4.min.js"
+        th:src="@{/webjars/datatables/js/dataTables.bootstrap4.min.js}"></script>
+<script type="application/javascript" src="/static/js/dataTable.js"
+        th:src="@{/js/dataTable.js}"></script>
+</body>
+</html>

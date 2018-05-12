@@ -1,0 +1,33 @@
+buildscript {
+    ext {
+        springBootVersion = '2.0.2.RELEASE'
+        webjarsLocatorVersion = '0.34'
+        javafakerVersion = '0.15'
+        bootstrapVersion = '4.1.0'
+        jQueryVersion = '3.3.1-1'
+        dataTablesVersion = '1.10.16'
+    }
+    repositories {
+        maven { setUrl('http://repo.spring.io/plugins-release') }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+archivesBaseName = "datatables-ajax-example"
+
+dependencies {
+    implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+    implementation("com.github.javafaker:javafaker:${javafakerVersion}")
+    implementation("org.webjars:webjars-locator:${webjarsLocatorVersion}")
+    implementation("org.webjars:bootstrap:${bootstrapVersion}")
+    implementation("org.webjars:jquery:${jQueryVersion}")
+    implementation("org.webjars:datatables:${dataTablesVersion}")
+    implementation(project(":lib"))
+}
