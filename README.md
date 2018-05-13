@@ -7,4 +7,4 @@ the [DataTables](https://datatables.net/) JavaScript library.
 
 The [example](example) module is a Spring application which exemplifies usage.
 
-Questions? Check the [javadoc](javadoc/index.html) or shoot me a message.
+Questions? Check the [javadoc](http://Berna-L.github.io/datatables-ajax-java) or shoot me a message.
