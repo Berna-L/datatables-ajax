@@ -9,8 +9,8 @@ import zone.berna.datatablesajax.response.TableResponse;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.LongSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,28 +83,40 @@ public class TableResponseGenerator {
      * Builds a row of the table.
      *
      * @param entry  the element to be processed into a row
-     * @param fields the list of fields to be used as columns
+     * @param fields the array of fields to be used as columns
      * @param <E>    the type of the element.
      * @return a List of the column values
+     * @throws IllegalArgumentException if there's no getter fot the field
      */
     private <E> List<String> buildRow(E entry, String... fields) {
-        val list = new ArrayList<String>();
-        for (String field : fields) {
-            try {
-                list.add(Stream.of(Introspector.getBeanInfo(entry.getClass()).getPropertyDescriptors())
-                        .filter(p -> field.equals(p.getName()))
-                        .map(p -> {
-                            try {
-                                return p.getReadMethod().invoke(entry).toString();
-                            } catch (IllegalAccessException | InvocationTargetException e) {
-                                throw new IllegalStateException(e);
-                            }
-                        }).findFirst().orElseThrow(IllegalArgumentException::new));
-            } catch (IntrospectionException e) {
-                throw new IllegalStateException(e);
-            }
+        return Stream.of(fields)
+                .map(f -> getStringForField(entry, f).orElseThrow(IllegalArgumentException::new))
+        .collect(Collectors.toList());
+    }
+
+    /**
+     * Retrieves the string representation of a field, using its {@code toString()} method.
+     *
+     * @param entry the element that contains the field
+     * @param field the name of the field
+     * @param <E> the type of the element
+     * @return the string representation of the field
+     * @throws IllegalArgumentException if there's no getter fot the field
+     */
+    private <E> Optional<String> getStringForField(E entry, String field) {
+        try {
+            return Stream.of(Introspector.getBeanInfo(entry.getClass()).getPropertyDescriptors())
+                    .filter(p -> field.equals(p.getName()))
+                    .map(p -> {
+                        try {
+                            return p.getReadMethod().invoke(entry).toString();
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            throw new IllegalStateException(e);
+                        }
+                    }).findFirst();
+        } catch (IntrospectionException e) {
+            throw new IllegalStateException(e);
         }
-        return list;
     }
 
 }
