@@ -1,16 +1,23 @@
 package zone.berna.datatablesajax.example.service;
 
 import com.github.javafaker.Faker;
+import lombok.extern.log4j.Log4j2;
 import lombok.val;
+import org.apache.logging.log4j.message.FormattedMessageFactory;
 import org.springframework.stereotype.Service;
 import zone.berna.datatablesajax.example.model.Customer;
 import zone.berna.datatablesajax.request.TableRequest;
 
 import javax.validation.constraints.PositiveOrZero;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
+@Log4j2
 public class CustomerService {
 
     private static final Comparator<Customer> orderByName = Comparator.comparing(Customer::getName, String::compareToIgnoreCase);
@@ -25,10 +32,10 @@ public class CustomerService {
         comparators.put("address", orderByAddress);
     }
 
-    private final List<Customer> customers;
+    private final CompletableFuture<List<Customer>> customers;
 
     public CustomerService() {
-        this.customers = generateMultiple(42);
+        this.customers = CompletableFuture.supplyAsync(() -> generateMultiple(98));
     }
 
     private static Comparator<Customer> getComparator(String field, TableRequest.Order.Direction resultOrder) {
@@ -49,6 +56,8 @@ public class CustomerService {
     }
 
     private static List<Customer> generateMultiple(@PositiveOrZero int qty) {
+        val before = Instant.now();
+        log.info(() -> new FormattedMessageFactory().newMessage("Starting creation of {} customer entries...", qty));
         if (qty < 0) {
             throw new IndexOutOfBoundsException();
         }
@@ -56,15 +65,24 @@ public class CustomerService {
         for (int i = 0; i < qty; i++) {
             list.add(generate(i));
         }
+        log.info(() -> new FormattedMessageFactory().newMessage("Creation complete! Time elapsed: {}", Duration.between(before, Instant.now())));
         return list;
     }
 
+    private List<Customer> getCustomers() {
+        try {
+            return this.customers.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     public long getTotal() {
-        return customers.size();
+        return getCustomers().size();
     }
 
     public long getTotalWithFilter(String query) {
-        return customers.stream()
+        return getCustomers().stream()
                 .filter(c -> c.getName().toLowerCase().contains(query) ||
                         c.getEmail().toLowerCase().contains(query) ||
                         c.getAddress().toString().toLowerCase().contains(query))
@@ -72,7 +90,7 @@ public class CustomerService {
     }
 
     public List<Customer> getFilteredList(String query, String orderByField, TableRequest.Order.Direction direction, int start, int count) {
-        val list = customers.stream()
+        val list = getCustomers().stream()
                 .filter(c -> c.getName().toLowerCase().contains(query) ||
                         c.getEmail().toLowerCase().contains(query) ||
                         c.getAddress().toString().toLowerCase().contains(query))
