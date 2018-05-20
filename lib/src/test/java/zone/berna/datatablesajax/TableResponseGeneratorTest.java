@@ -13,21 +13,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.LongSupplier;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TableResponseGeneratorTest {
 
-    public class TestObject {
-        private String name;
-        private int index;
-
-        public String getName() {
-            return this.name;
-        }
-
-        public int getIndex() {
-            return this.index;
-        }
+    private TableResponse generate() {
+        return TableResponseGenerator.builder()
+                .tableRequest(request)
+                .totalCountSupplier(totalSupplier)
+                .totalFilteredFunction(totalFilteredFunction)
+                .paginatedSearchFunction(paginatedSearchFunction)
+                .fields(expectedFields)
+                .build();
     }
 
     private TestObject testObject;
@@ -102,18 +100,75 @@ class TableResponseGeneratorTest {
 
     }
 
-    private TableResponse generate() {
-        return TableResponseGenerator.instance().generateResponse(
-                request, totalSupplier, totalFilteredFunction, paginatedSearchFunction, expectedFields
-        );
-
+    @Test
+    void checkNonExistentField() {
+        orderingField = "random";
+        expectedFields = new String[]{orderingField};
+        assertThrows(IllegalArgumentException.class, this::generate);
     }
 
     @Test
-    void checkSingletonness() {
-        TableResponseGenerator trg = TableResponseGenerator.instance();
-        TableResponseGenerator trg2 = TableResponseGenerator.instance();
-        assertSame(trg, trg2);
+    void checkNullRequest() {
+        AssertNPE.of(() -> TableResponseGenerator.builder()
+                .tableRequest(null));
+    }
+
+    @Test
+    void checkNullTotalCountSupplier() {
+        AssertNPE.of(() -> TableResponseGenerator.builder()
+                .tableRequest(request)
+                .totalCountSupplier(null));
+    }
+
+    @Test
+    void checkNullTotalFilteredFunction() {
+        AssertNPE.of(() -> TableResponseGenerator.builder()
+                .tableRequest(request)
+                .totalCountSupplier(totalSupplier)
+                .totalFilteredFunction(null));
+    }
+
+    @Test
+    void checkNullPaginatedSearchFunction() {
+        AssertNPE.of(() -> TableResponseGenerator.builder()
+                .tableRequest(request)
+                .totalCountSupplier(totalSupplier)
+                .totalFilteredFunction(totalFilteredFunction)
+                .paginatedSearchFunction(null));
+    }
+
+    @Test
+    void checkNullFieldArray() {
+        AssertNPE.of(() -> TableResponseGenerator.builder()
+                .tableRequest(request)
+                .totalCountSupplier(totalSupplier)
+                .totalFilteredFunction(totalFilteredFunction)
+                .paginatedSearchFunction(paginatedSearchFunction)
+                .fields((String[]) null));
+    }
+
+    @Test
+    void checkEmptyFieldArray() {
+        assertThrows(IllegalArgumentException.class,
+                () -> TableResponseGenerator.builder()
+                        .tableRequest(request)
+                        .totalCountSupplier(totalSupplier)
+                        .totalFilteredFunction(totalFilteredFunction)
+                        .paginatedSearchFunction(paginatedSearchFunction)
+                        .fields(new String[]{}));
+    }
+
+    public class TestObject {
+        private String name;
+        private int index;
+
+        String getName() {
+            return this.name;
+        }
+
+        int getIndex() {
+            return this.index;
+        }
     }
 
     @Test
@@ -121,12 +176,4 @@ class TableResponseGeneratorTest {
         TableResponse actualResponse = generate();
         assertEquals(expectedResponse, actualResponse);
     }
-
-    @Test
-    void checkNonExistantField() {
-        orderingField = "random";
-        expectedFields = new String[]{orderingField};
-        assertThrows(IllegalArgumentException.class, this::generate);
-    }
-
 }

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import zone.berna.datatablesajax.TableResponseGenerator;
+import zone.berna.datatablesajax.example.model.Customer;
 import zone.berna.datatablesajax.example.service.CustomerService;
 import zone.berna.datatablesajax.request.TableRequest;
 
@@ -25,13 +26,12 @@ public class CustomerRestController {
 
     @PostMapping("get-table-data")
     public ResponseEntity<?> tableData(@RequestBody TableRequest tableRequest) {
-        return ResponseEntity.ok(TableResponseGenerator.instance().generateResponse(tableRequest,
-                customerService::getTotal,
-                customerService::getTotalWithFilter,
-                customerService::getFilteredList,
-                "name",
-                "email",
-                "address"
-        ));
+        return ResponseEntity.ok(TableResponseGenerator.<Customer>builder()
+                .tableRequest(tableRequest)
+                .totalCountSupplier(customerService::getTotal)
+                .totalFilteredFunction(customerService::getTotalWithFilter)
+                .paginatedSearchFunction(customerService::getFilteredList)
+                .fields("name", "email", "address")
+                .build());
     }
 }

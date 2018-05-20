@@ -1,7 +1,7 @@
 package zone.berna.datatablesajax.request;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
+import zone.berna.datatablesajax.AssertNPE;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,9 +19,6 @@ class TableRequestTest {
     private TableRequest tableRequest;
 
     //Helper methods
-    private void assertNullPointerException(Executable e) {
-        assertThrows(NullPointerException.class, e);
-    }
 
     //Search tests
     @Test
@@ -38,7 +35,7 @@ class TableRequestTest {
 
     @Test
     void checkSearchNullValue() {
-        assertNullPointerException(() -> new TableRequest.Search().setValue(null));
+        AssertNPE.of(() -> new TableRequest.Search().setValue(null));
     }
 
     //Order tests
@@ -87,12 +84,12 @@ class TableRequestTest {
 
     @Test
     void checkColumnNullName() {
-        assertNullPointerException(() -> new TableRequest.Column().setName(null));
+        AssertNPE.of(() -> new TableRequest.Column().setName(null));
     }
 
     @Test
     void checkColumnNullSearch() {
-        assertNullPointerException(() -> new TableRequest.Column().setSearch(null));
+        AssertNPE.of(() -> new TableRequest.Column().setSearch(null));
     }
 
     //TableRequest methods
@@ -128,12 +125,12 @@ class TableRequestTest {
 
     @Test
     void checkNullSearch() {
-        assertNullPointerException(() -> new TableRequest().setSearch(null));
+        AssertNPE.of(() -> new TableRequest().setSearch(null));
     }
 
     @Test
     void checkNullColumns() {
-        assertNullPointerException(() -> new TableRequest().setColumns(null));
+        AssertNPE.of(() -> new TableRequest().setColumns(null));
     }
 
     @Test
@@ -143,7 +140,7 @@ class TableRequestTest {
 
     @Test
     void checkNullOrder() {
-        assertNullPointerException(() -> new TableRequest().setOrder(null));
+        AssertNPE.of(() -> new TableRequest().setOrder(null));
     }
 
     @Test

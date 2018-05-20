@@ -11,10 +11,15 @@ import zone.berna.datatablesajax.request.TableRequest;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Service
 @Log4j2
@@ -35,7 +40,7 @@ public class CustomerService {
     private final CompletableFuture<List<Customer>> customers;
 
     public CustomerService() {
-        this.customers = CompletableFuture.supplyAsync(() -> generateMultiple(98));
+        this.customers = CompletableFuture.supplyAsync(() -> generateMultiple(78));
     }
 
     private static Comparator<Customer> getComparator(String field, TableRequest.Order.Direction resultOrder) {
@@ -56,15 +61,14 @@ public class CustomerService {
     }
 
     private static List<Customer> generateMultiple(@PositiveOrZero int qty) {
-        val before = Instant.now();
-        log.info(() -> new FormattedMessageFactory().newMessage("Starting creation of {} customer entries...", qty));
         if (qty < 0) {
             throw new IndexOutOfBoundsException();
         }
-        val list = new ArrayList<Customer>();
-        for (int i = 0; i < qty; i++) {
-            list.add(generate(i));
-        }
+        log.info(() -> new FormattedMessageFactory().newMessage("Starting creation of {} customer entries by IntStream range...", qty));
+        val before = Instant.now();
+        val list = IntStream.range(0, qty)
+                .mapToObj(CustomerService::generate)
+                .collect(Collectors.toList());
         log.info(() -> new FormattedMessageFactory().newMessage("Creation complete! Time elapsed: {}", Duration.between(before, Instant.now())));
         return list;
     }
@@ -83,17 +87,17 @@ public class CustomerService {
 
     public long getTotalWithFilter(String query) {
         return getCustomers().stream()
-                .filter(c -> c.getName().toLowerCase().contains(query) ||
-                        c.getEmail().toLowerCase().contains(query) ||
-                        c.getAddress().toString().toLowerCase().contains(query))
+                .filter(c -> Stream.of(c.getName(), c.getEmail(), c.getAddress().toString())
+                        .map(String::toLowerCase)
+                        .anyMatch(s -> s.contains(query)))
                 .count();
     }
 
     public List<Customer> getFilteredList(String query, String orderByField, TableRequest.Order.Direction direction, int start, int count) {
         val list = getCustomers().stream()
-                .filter(c -> c.getName().toLowerCase().contains(query) ||
-                        c.getEmail().toLowerCase().contains(query) ||
-                        c.getAddress().toString().toLowerCase().contains(query))
+                .filter(c -> Stream.of(c.getName(), c.getEmail(), c.getAddress().toString())
+                        .map(String::toLowerCase)
+                        .anyMatch(s -> s.contains(query)))
                 .sorted(getComparator(orderByField, direction))
                 .collect(Collectors.toList());
         return list.subList(start, Math.min(list.size(), start + count));
